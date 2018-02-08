@@ -51,23 +51,11 @@ func (p AwsProvider) Buckets () ([]Bucket, error) {
 	}
 	buckets := make([]Bucket, len(awsBuckets.Buckets))
 	for i, awsBucket := range awsBuckets.Buckets {
-		buckets[i] = NewAwsBucket(*awsBucket.Name)
+		buckets[i] = NewAwsBucket(*awsBucket.Name, &p)
 	}
 	return buckets, nil
 }
 
 func (p AwsProvider) Bucket (name string) Bucket {
-	return NewAwsBucket(name)
-}
-
-func (p AwsProvider) RemoveBucket (name string) error {
-	svc := s3.New(p.session)
-	input := &s3.DeleteBucketInput{
-		Bucket: aws.String(name),
-	}
-	_, err := svc.DeleteBucket(input)
-	if err != nil {
-		return err
-	}
-	return nil
+	return NewAwsBucket(name, &p)
 }

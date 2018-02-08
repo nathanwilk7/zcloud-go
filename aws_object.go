@@ -30,14 +30,18 @@ func (o AwsObject) Key () string {
 	return o.key
 }
 
-func (o AwsObject) LastModified () time.Time {
-	o.get()
-	return o.lastModified
+func (o AwsObject) LastModified () (time.Time, error) {
+	if err := o.get(); err != nil {
+		return time.Time{}, err
+	}
+	return o.lastModified, nil
 }
 
-func (o AwsObject) Size () int {
-	o.get()
-	return o.size
+func (o AwsObject) Size () (int, error) {
+	if err := o.get(); err != nil {
+		return 0, err
+	}
+	return o.size, nil
 }
 
 func NewAwsObjectReader () AwsObjectReader {
@@ -48,9 +52,11 @@ type AwsObjectReader struct {
 	rc io.ReadCloser
 }
 
-func (o AwsObject) Reader () io.ReadCloser {
-	o.get()
-	return o.reader
+func (o AwsObject) Reader () (io.ReadCloser, error) {
+	if err := o.get(); err != nil {
+		return nil, err
+	}
+	return o.reader, nil
 }
 
 func (w AwsObjectReader) Read (b []byte) (int, error) {
@@ -66,17 +72,17 @@ type AwsObjectWriter struct {
 	b []byte
 }
 
-func (o AwsObject) Writer () io.WriteCloser {
+func (o AwsObject) Writer () (io.WriteCloser, error) {
 	o.writer.ui = s3manager.UploadInput{
 		Bucket: aws.String(o.bucket),
 		Key: aws.String(o.Key()),
 	}
-	return o.writer
+	return o.writer, nil
 }
 
 func (w AwsObjectWriter) Write (b []byte) (int, error) {
 	w.b = append(w.b, b...)
-	return 0, nil
+	return len(b), nil
 }
 
 func (w AwsObjectWriter) Close () error {

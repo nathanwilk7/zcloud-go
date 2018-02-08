@@ -26,20 +26,20 @@ type Provider interface {
 type StorageProvider interface {
 	Buckets () ([]Bucket, error)
 	Bucket (name string) Bucket
-	RemoveBucket (name string) error
 }
 
 type Bucket interface {
 	Create () error
+	Delete () error
 	Name () string
 	Object (key string) Object
-	Objects () []Object
+	Objects () ([]Object, error)
 }
 
 type Object interface {
 	Key () string
-	LastModified () time.Time
-	Reader () io.ReadCloser
-	Writer () io.WriteCloser
-	Size () int
+	LastModified () (time.Time, error)
+	Reader () (io.ReadCloser, error)
+	Writer () (io.WriteCloser, error)
+	Size () (int, error)
 }

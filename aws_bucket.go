@@ -2,25 +2,39 @@ package zcloud
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func NewAwsBucket (name string) AwsBucket {
+func NewAwsBucket (name string, p *AwsProvider) AwsBucket {
 	return AwsBucket{
 		name: name,
+		p: p,
 	}
 }
 
 type AwsBucket struct {
 	name string
+	p *AwsProvider
 }
+
 func (b AwsBucket) Create () error {
-	svc := s3.New(session.New())
+	s3svc := s3.New(b.p.session)
 	input := &s3.CreateBucketInput{
 		Bucket: aws.String(b.Name()),
 	}
-	_, err := svc.CreateBucket(input)
+	_, err := s3svc.CreateBucket(input)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b AwsBucket) Delete () error {
+	s3svc := s3.New(b.p.session)
+	input := &s3.DeleteBucketInput{
+		Bucket: aws.String(b.Name()),
+	}
+	_, err := s3svc.DeleteBucket(input)
 	if err != nil {
 		return err
 	}
@@ -35,6 +49,22 @@ func (b AwsBucket) Object (key string) Object {
 	return NewAwsObject(b.Name(), key)
 }
 
-func (b AwsBucket) Objects () []Object {
-	return nil
+func (b AwsBucket) Objects () ([]Object, error) {
+	s3svc := s3.New(b.p.session)
+	os := []Object{}
+	n := b.Name()
+	params := &s3.ListObjectsV2Input{
+		Bucket: &n,
+	}
+	err := s3svc.ListObjectsV2Pages(params,
+		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
+			for _, c := range page.Contents {
+				os = append(os, NewAwsObject(b.Name(), *c.Key))
+			}
+			return true
+		})
+	if err != nil {
+		return os, err
+	}
+	return os, nil
 }
