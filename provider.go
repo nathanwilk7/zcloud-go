@@ -9,12 +9,15 @@ import (
 type NewProviderParams struct {
 	Name string
 	AwsId, AwsSecret, AwsRegion string
+	GCloudProjectID string
 }
 
 func NewProvider (params NewProviderParams) (Provider, error) {
 	switch params.Name {
 	case "AWS":
 		return NewAwsProvider(params.AwsId, params.AwsSecret, params.AwsRegion), nil
+	case "GCLOUD":
+		return NewGCloudProvider(params.GCloudProjectID), nil
 	}
 	return nil, fmt.Errorf("%s is not a valid provider name", params.Name)
 }
@@ -37,6 +40,7 @@ type Bucket interface {
 }
 
 type Object interface {
+	Delete () error
 	Key () string
 	LastModified () (time.Time, error)
 	Reader () (io.ReadCloser, error)

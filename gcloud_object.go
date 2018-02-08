@@ -21,6 +21,10 @@ type GCloudObject struct {
 	reader GCloudObjectReader
 	writer GCloudObjectWriter
 }
+func (o GCloudObject) Delete () error {
+	err := o.b.p.client.Bucket(o.b.Name()).Object(o.Key()).Delete(o.b.p.context)
+	return err
+}
 
 func (o GCloudObject) Key () string {
 	return o.key
@@ -83,7 +87,7 @@ func (w GCloudObjectWriter) Close () error {
 	return w.wc.Close()
 }
 
-func (o GCloudObject) get () error {
+func (o *GCloudObject) get () error {
 	objAttrs, err := o.b.p.client.Bucket(o.b.Name()).Object(o.Key()).Attrs(o.b.p.context)
 	if err != nil {
 		return err

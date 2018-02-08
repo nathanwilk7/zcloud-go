@@ -46,7 +46,7 @@ func (b AwsBucket) Name () string {
 }
 
 func (b AwsBucket) Object (key string) Object {
-	return NewAwsObject(b.Name(), key)
+	return NewAwsObject(b.Name(), key, &b)
 }
 
 func (b AwsBucket) Objects () ([]Object, error) {
@@ -59,7 +59,7 @@ func (b AwsBucket) Objects () ([]Object, error) {
 	err := s3svc.ListObjectsV2Pages(params,
 		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
 			for _, c := range page.Contents {
-				os = append(os, NewAwsObject(b.Name(), *c.Key))
+				os = append(os, NewAwsObject(b.Name(), *c.Key, &b))
 			}
 			return true
 		})
