@@ -2,6 +2,8 @@ package zcloud
 
 import (
 	"google.golang.org/api/iterator"
+
+	gs "cloud.google.com/go/storage"
 )
 
 func NewGCloudBucket (name string, p *GCloudProvider) GCloudBucket {
@@ -39,7 +41,17 @@ func (b GCloudBucket) Object (key string) Object {
 }
 
 func (b GCloudBucket) Objects () ([]Object, error) {
-	it := b.p.client.Bucket(b.Name()).Objects(b.p.context, nil)
+	return b.ObjectsQuery(nil)
+}
+
+func (b GCloudBucket) ObjectsQuery (q *ObjectsQueryParams) ([]Object, error) {
+	var gsq *gs.Query
+	if q != nil {
+		gsq = &gs.Query{
+			Prefix: q.Prefix,
+		}
+	}
+	it := b.p.client.Bucket(b.Name()).Objects(b.p.context, gsq)
 	os := []Object{}
 	for {
 		o, err := it.Next()

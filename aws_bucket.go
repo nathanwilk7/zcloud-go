@@ -50,11 +50,20 @@ func (b AwsBucket) Object (key string) Object {
 }
 
 func (b AwsBucket) Objects () ([]Object, error) {
+	return b.ObjectsQuery(nil)
+}
+
+func (b AwsBucket) ObjectsQuery (q *ObjectsQueryParams) ([]Object, error) {
 	s3svc := s3.New(b.p.session)
 	os := []Object{}
 	n := b.Name()
+	var prefix string
+	if q != nil {
+		prefix = q.Prefix
+	}
 	params := &s3.ListObjectsV2Input{
 		Bucket: &n,
+		Prefix: aws.String(prefix),
 	}
 	err := s3svc.ListObjectsV2Pages(params,
 		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
