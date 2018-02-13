@@ -34,6 +34,8 @@ func NewProvider (params ProviderParams) (Provider, error) {
 		return NewAwsProvider(params.AwsId, params.AwsSecret, params.AwsRegion), nil
 	case "GCLOUD":
 		return NewGCloudProvider(params.GCloudProjectID), nil
+	case "TEST":
+		return NewTestProvider(), nil
 	}
 	return nil, fmt.Errorf("%s is not a valid provider name", params.Name)
 }
