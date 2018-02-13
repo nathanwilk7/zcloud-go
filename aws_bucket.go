@@ -5,19 +5,19 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func NewAwsBucket (name string, p *AwsProvider) AwsBucket {
-	return AwsBucket{
+func newAwsBucket (name string, p *awsProvider) awsBucket {
+	return awsBucket{
 		name: name,
 		p: p,
 	}
 }
 
-type AwsBucket struct {
+type awsBucket struct {
 	name string
-	p *AwsProvider
+	p *awsProvider
 }
 
-func (b AwsBucket) Create () error {
+func (b awsBucket) Create () error {
 	s3svc := s3.New(b.p.session)
 	input := &s3.CreateBucketInput{
 		Bucket: aws.String(b.Name()),
@@ -29,7 +29,7 @@ func (b AwsBucket) Create () error {
 	return nil
 }
 
-func (b AwsBucket) Delete () error {
+func (b awsBucket) Delete () error {
 	s3svc := s3.New(b.p.session)
 	input := &s3.DeleteBucketInput{
 		Bucket: aws.String(b.Name()),
@@ -41,19 +41,19 @@ func (b AwsBucket) Delete () error {
 	return nil
 }
 
-func (b AwsBucket) Name () string {
+func (b awsBucket) Name () string {
 	return b.name
 }
 
-func (b AwsBucket) Object (key string) Object {
-	return NewAwsObject(b.Name(), key, &b)
+func (b awsBucket) Object (key string) Object {
+	return newAwsObject(b.Name(), key, &b)
 }
 
-func (b AwsBucket) Objects () ([]Object, error) {
+func (b awsBucket) Objects () ([]Object, error) {
 	return b.ObjectsQuery(nil)
 }
 
-func (b AwsBucket) ObjectsQuery (q *ObjectsQueryParams) ([]Object, error) {
+func (b awsBucket) ObjectsQuery (q *ObjectsQueryParams) ([]Object, error) {
 	s3svc := s3.New(b.p.session)
 	os := []Object{}
 	n := b.Name()
@@ -68,7 +68,7 @@ func (b AwsBucket) ObjectsQuery (q *ObjectsQueryParams) ([]Object, error) {
 	err := s3svc.ListObjectsV2Pages(params,
 		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
 			for _, c := range page.Contents {
-				os = append(os, NewAwsObject(b.Name(), *c.Key, &b))
+				os = append(os, newAwsObject(b.Name(), *c.Key, &b))
 			}
 			return true
 		})

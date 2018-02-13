@@ -8,12 +8,7 @@ import (
 )
 
 func TestAws (t *testing.T) {
-	params := NewProviderParams{
-		Name: "AWS",
-		AwsId: os.Getenv("ZCLOUD_AWS_KEY_ID"),
-		AwsSecret: os.Getenv("ZCLOUD_AWS_SECRET_KEY"),
-		AwsRegion: os.Getenv("ZCLOUD_AWS_REGION"),
-	}
+	params := AwsProviderParams("AWS", os.Getenv("ZCLOUD_AWS_KEY_ID"), os.Getenv("ZCLOUD_AWS_SECRET_KEY"), os.Getenv("ZCLOUD_AWS_REGION"))
 	p, err := NewProvider(params)
 	if err != nil {
 		t.Fatal(err)
@@ -24,10 +19,7 @@ func TestAws (t *testing.T) {
 }
 
 func TestGCloud (t *testing.T) {
-	params := NewProviderParams{
-		Name: "GCLOUD",
-		GCloudProjectID: os.Getenv("ZCLOUD_GCLOUD_PROJECT"),
-	}
+	params := GCloudProviderParams("GCLOUD", os.Getenv("ZCLOUD_GCLOUD_PROJECT"))
 	p, err := NewProvider(params)
 	if err != nil {
 		t.Fatal(err)

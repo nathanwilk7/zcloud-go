@@ -6,45 +6,45 @@ import (
 	gs "cloud.google.com/go/storage"
 )
 
-func NewGCloudBucket (name string, p *GCloudProvider) GCloudBucket {
-	return GCloudBucket{
+func newGCloudBucket (name string, p *gCloudProvider) gCloudBucket {
+	return gCloudBucket{
 		name: name,
 		p: p,
 	}
 }
 
-type GCloudBucket struct {
+type gCloudBucket struct {
 	name string
-	p *GCloudProvider
+	p *gCloudProvider
 }
 
-func (b GCloudBucket) Create () error {
+func (b gCloudBucket) Create () error {
 	if err := b.p.client.Bucket(b.Name()).Create(b.p.context, b.p.project, nil); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (b GCloudBucket) Delete () error {
+func (b gCloudBucket) Delete () error {
 	if err := b.p.client.Bucket(b.Name()).Delete(b.p.context); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (b GCloudBucket) Name () string {
+func (b gCloudBucket) Name () string {
 	return b.name
 }
 
-func (b GCloudBucket) Object (key string) Object {
-	return NewGCloudObject(b.Name(), key, &b)
+func (b gCloudBucket) Object (key string) Object {
+	return newGCloudObject(b.Name(), key, &b)
 }
 
-func (b GCloudBucket) Objects () ([]Object, error) {
+func (b gCloudBucket) Objects () ([]Object, error) {
 	return b.ObjectsQuery(nil)
 }
 
-func (b GCloudBucket) ObjectsQuery (q *ObjectsQueryParams) ([]Object, error) {
+func (b gCloudBucket) ObjectsQuery (q *ObjectsQueryParams) ([]Object, error) {
 	var gsq *gs.Query
 	if q != nil {
 		gsq = &gs.Query{
@@ -61,7 +61,7 @@ func (b GCloudBucket) ObjectsQuery (q *ObjectsQueryParams) ([]Object, error) {
 		if err != nil {
 			return os, err
 		}
-		os = append(os, NewGCloudObject(b.Name(), o.Name, &b))
+		os = append(os, newGCloudObject(b.Name(), o.Name, &b))
 	}
 	return os, nil
 }

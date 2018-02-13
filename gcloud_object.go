@@ -5,54 +5,50 @@ import (
 	"time"
 )
 
-func NewGCloudObject (bucket, key string, b *GCloudBucket) GCloudObject {
-	return GCloudObject{
+func newGCloudObject (bucket, key string, b *gCloudBucket) gCloudObject {
+	return gCloudObject{
 		b: b,
 		bucket: bucket,
 		key: key,
 	}
 }
 
-type GCloudObject struct {
-	b *GCloudBucket
+type gCloudObject struct {
+	b *gCloudBucket
 	bucket, key string
 	lastModified time.Time
 	size int
-	reader GCloudObjectReader
-	writer GCloudObjectWriter
+	reader gCloudObjectReader
+	writer gCloudObjectWriter
 }
-func (o GCloudObject) Delete () error {
+func (o gCloudObject) Delete () error {
 	err := o.b.p.client.Bucket(o.b.Name()).Object(o.Key()).Delete(o.b.p.context)
 	return err
 }
 
-func (o GCloudObject) Key () string {
+func (o gCloudObject) Key () string {
 	return o.key
 }
 
-func (o GCloudObject) LastModified () (time.Time, error) {
+func (o gCloudObject) LastModified () (time.Time, error) {
 	if err := o.get(); err != nil {
 		return time.Time{}, err
 	}
 	return o.lastModified, nil
 }
 
-func (o GCloudObject) Size () (int, error) {
+func (o gCloudObject) Size () (int, error) {
 	if err := o.get(); err != nil {
 		return 0, err
 	}
 	return o.size, nil
 }
 
-func NewGCloudObjectReader () GCloudObjectReader {
-	return GCloudObjectReader{}
-}
-
-type GCloudObjectReader struct {
+type gCloudObjectReader struct {
 	rc io.ReadCloser
 }
 
-func (o GCloudObject) Reader () (io.ReadCloser, error) {
+func (o gCloudObject) Reader () (io.ReadCloser, error) {
 	r, err := o.b.p.client.Bucket(o.b.Name()).Object(o.Key()).NewReader(o.b.p.context)
 	if err != nil {
 		return nil, err
@@ -61,33 +57,33 @@ func (o GCloudObject) Reader () (io.ReadCloser, error) {
 	return o.reader, nil
 }
 
-func (w GCloudObjectReader) Read (b []byte) (int, error) {
+func (w gCloudObjectReader) Read (b []byte) (int, error) {
 	return w.rc.Read(b)
 }
 
-func (w GCloudObjectReader) Close () error {
+func (w gCloudObjectReader) Close () error {
 	return w.rc.Close()
 }
 
-type GCloudObjectWriter struct {
+type gCloudObjectWriter struct {
 	wc io.WriteCloser
 }
 
-func (o GCloudObject) Writer () (io.WriteCloser, error) {
+func (o gCloudObject) Writer () (io.WriteCloser, error) {
 	w := o.b.p.client.Bucket(o.b.Name()).Object(o.Key()).NewWriter(o.b.p.context)
 	o.writer.wc = w
 	return o.writer, nil
 }
 
-func (w GCloudObjectWriter) Write (b []byte) (int, error) {
+func (w gCloudObjectWriter) Write (b []byte) (int, error) {
 	return w.wc.Write(b)
 }
 
-func (w GCloudObjectWriter) Close () error {
+func (w gCloudObjectWriter) Close () error {
 	return w.wc.Close()
 }
 
-func (o *GCloudObject) get () error {
+func (o *gCloudObject) get () error {
 	objAttrs, err := o.b.p.client.Bucket(o.b.Name()).Object(o.Key()).Attrs(o.b.p.context)
 	if err != nil {
 		return err
