@@ -31,9 +31,9 @@ type ProviderParams struct {
 func NewProvider (params ProviderParams) (Provider, error) {
 	switch params.Name {
 	case "AWS":
-		return NewAwsProvider(params.AwsId, params.AwsSecret, params.AwsRegion), nil
+		return newAwsProvider(params.AwsId, params.AwsSecret, params.AwsRegion), nil
 	case "GCLOUD":
-		return NewGCloudProvider(params.GCloudProjectID), nil
+		return newGCloudProvider(params.GCloudProjectID), nil
 	case "TEST":
 		return NewTestProvider(), nil
 	}
@@ -53,7 +53,7 @@ type Provider interface {
 // func NewStorageProvider (params StorageProviderParams) (StorageProvider, error) {
 // 	switch params.Name {
 // 	case "AWS":
-// 		return NewAwsProvider(params.AwsId, params.AwsSecret, params.AwsRegion), nil
+// 		return newAwsProvider(params.AwsId, params.AwsSecret, params.AwsRegion), nil
 // 	case "GCLOUD":
 // 		return NewGCloudProvider(params.GCloudProjectID), nil
 // 	}

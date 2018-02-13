@@ -10,24 +10,24 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-func NewAwsObject (bucket, key string, b *AwsBucket) AwsObject {
-	return AwsObject{
+func newAwsObject (bucket, key string, b *awsBucket) awsObject {
+	return awsObject{
 		bucket: bucket,
 		key: key,
 		b: b,
 	}
 }
 
-type AwsObject struct {
+type awsObject struct {
 	bucket, key string
 	lastModified time.Time
 	size int
-	reader AwsObjectReader
-	writer *AwsObjectWriter
-	b *AwsBucket
+	reader awsObjectReader
+	writer *awsObjectWriter
+	b *awsBucket
 }
 
-func (o AwsObject) Delete () error {
+func (o awsObject) Delete () error {
 	s3svc := s3.New(o.b.p.session)
 	input := &s3.DeleteObjectInput{
 		Bucket: aws.String(o.bucket),
@@ -37,55 +37,55 @@ func (o AwsObject) Delete () error {
 	return err
 }
 
-func (o AwsObject) Key () string {
+func (o awsObject) Key () string {
 	return o.key
 }
 
-func (o AwsObject) LastModified () (time.Time, error) {
+func (o awsObject) LastModified () (time.Time, error) {
 	if err := o.get(); err != nil {
 		return time.Time{}, err
 	}
 	return o.lastModified, nil
 }
 
-func (o AwsObject) Size () (int, error) {
+func (o awsObject) Size () (int, error) {
 	if err := o.get(); err != nil {
 		return 0, err
 	}
 	return o.size, nil
 }
 
-func NewAwsObjectReader () AwsObjectReader {
-	return AwsObjectReader{}
+func newAwsObjectReader () awsObjectReader {
+	return awsObjectReader{}
 }
 
-type AwsObjectReader struct {
+type awsObjectReader struct {
 	rc io.ReadCloser
 }
 
-func (o AwsObject) Reader () (io.ReadCloser, error) {
+func (o awsObject) Reader () (io.ReadCloser, error) {
 	if err := o.get(); err != nil {
 		return nil, err
 	}
 	return o.reader, nil
 }
 
-func (w AwsObjectReader) Read (b []byte) (int, error) {
+func (w awsObjectReader) Read (b []byte) (int, error) {
 	return w.rc.Read(b)
 }
 
-func (w AwsObjectReader) Close () error {
+func (w awsObjectReader) Close () error {
 	return w.rc.Close()
 }
 
-type AwsObjectWriter struct {
-	o *AwsObject
+type awsObjectWriter struct {
+	o *awsObject
 	ui s3manager.UploadInput
 	b []byte
 }
 
-func (o AwsObject) Writer () (io.WriteCloser, error) {
-	w := AwsObjectWriter{}
+func (o awsObject) Writer () (io.WriteCloser, error) {
+	w := awsObjectWriter{}
 	o.writer = &w
 	o.writer.ui = s3manager.UploadInput{
 		Bucket: aws.String(o.bucket),
@@ -95,12 +95,12 @@ func (o AwsObject) Writer () (io.WriteCloser, error) {
 	return o.writer, nil
 }
 
-func (w *AwsObjectWriter) Write (b []byte) (int, error) {
+func (w *awsObjectWriter) Write (b []byte) (int, error) {
 	w.b = append(w.b, b...)
 	return len(b), nil
 }
 
-func (w *AwsObjectWriter) Close () error {
+func (w *awsObjectWriter) Close () error {
 	w.ui.Body = bytes.NewReader(w.b)
 	s3svc := s3.New(w.o.b.p.session)
 	uploader := s3manager.NewUploaderWithClient(s3svc)
@@ -111,7 +111,7 @@ func (w *AwsObjectWriter) Close () error {
 	return nil
 }
 
-func (o *AwsObject) get () error {
+func (o *awsObject) get () error {
 	s3svc := s3.New(o.b.p.session)
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(o.bucket),

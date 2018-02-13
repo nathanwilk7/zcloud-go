@@ -7,26 +7,26 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func NewGCloudProvider(projectID string) GCloudProvider {
+func newGCloudProvider (projectID string) gCloudProvider {
 	c := context.Background()
 	client, err := gs.NewClient(c)
 	if err != nil {
 		panic(err)
 	}
-	return GCloudProvider{
+	return gCloudProvider{
 		context: c,
 		client: client,
 		project: projectID,
 	}
 }
 
-type GCloudProvider struct {
+type gCloudProvider struct {
 	context context.Context
 	client *gs.Client
 	project string
 }
 
-func (p GCloudProvider) Buckets () ([]Bucket, error) {
+func (p gCloudProvider) Buckets () ([]Bucket, error) {
 	it := p.client.Buckets(p.context, p.project)
 	bs := []Bucket{}
 	for {
@@ -37,11 +37,11 @@ func (p GCloudProvider) Buckets () ([]Bucket, error) {
 		if err != nil {
 			return nil, err
 		}
-		bs = append(bs, NewGCloudBucket(b.Name, &p))
+		bs = append(bs, newGCloudBucket(b.Name, &p))
 	}
 	return bs, nil
 }
 
-func (p GCloudProvider) Bucket (name string) Bucket {
-	return NewGCloudBucket(name, &p)
+func (p gCloudProvider) Bucket (name string) Bucket {
+	return newGCloudBucket(name, &p)
 }

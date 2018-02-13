@@ -38,10 +38,6 @@ func (o TestObject) Size () (int, error) {
 	return o.SizeField, nil
 }
 
-func NewTestObjectReader () TestObjectReader {
-	return TestObjectReader{}
-}
-
 type TestObjectReader struct {}
 
 func (o TestObject) Reader () (io.ReadCloser, error) {
