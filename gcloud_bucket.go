@@ -16,17 +16,18 @@ func newGCloudBucket (name string, p *gCloudProvider) gCloudBucket {
 type gCloudBucket struct {
 	name string
 	p *gCloudProvider
+	gcb *gs.BucketHandle
 }
 
 func (b gCloudBucket) Create () error {
-	if err := b.p.client.Bucket(b.Name()).Create(b.p.context, b.p.project, nil); err != nil {
+	if err := b.getGCloudBucket().Create(b.p.context, b.p.project, nil); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (b gCloudBucket) Delete () error {
-	if err := b.p.client.Bucket(b.Name()).Delete(b.p.context); err != nil {
+	if err := b.getGCloudBucket().Delete(b.p.context); err != nil {
 		return err
 	}
 	return nil
@@ -51,7 +52,7 @@ func (b gCloudBucket) ObjectsQuery (q *ObjectsQueryParams) ([]Object, error) {
 			Prefix: q.Prefix,
 		}
 	}
-	it := b.p.client.Bucket(b.Name()).Objects(b.p.context, gsq)
+	it := b.getGCloudBucket().Objects(b.p.context, gsq)
 	os := []Object{}
 	for {
 		o, err := it.Next()
@@ -64,4 +65,11 @@ func (b gCloudBucket) ObjectsQuery (q *ObjectsQueryParams) ([]Object, error) {
 		os = append(os, newGCloudObject(b.Name(), o.Name, &b))
 	}
 	return os, nil
+}
+
+func (b gCloudBucket) getGCloudBucket() *gs.BucketHandle {
+	if b.gcb == nil {
+		b.gcb = b.p.client.Bucket(b.Name())
+	}
+	return b.gcb
 }

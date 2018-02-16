@@ -3,6 +3,8 @@ package zcloud
 import (
 	"io"
 	"time"
+
+	gs "cloud.google.com/go/storage"
 )
 
 func newGCloudObject (bucket, key string, b *gCloudBucket) gCloudObject {
@@ -20,9 +22,10 @@ type gCloudObject struct {
 	size int
 	reader gCloudObjectReader
 	writer gCloudObjectWriter
+	gco *gs.ObjectHandle
 }
 func (o gCloudObject) Delete () error {
-	err := o.b.p.client.Bucket(o.b.Name()).Object(o.Key()).Delete(o.b.p.context)
+	err := o.getGCloudObject().Delete(o.b.p.context)
 	return err
 }
 
@@ -49,7 +52,7 @@ type gCloudObjectReader struct {
 }
 
 func (o gCloudObject) Reader () (io.ReadCloser, error) {
-	r, err := o.b.p.client.Bucket(o.b.Name()).Object(o.Key()).NewReader(o.b.p.context)
+	r, err := o.getGCloudObject().NewReader(o.b.p.context)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +73,7 @@ type gCloudObjectWriter struct {
 }
 
 func (o gCloudObject) Writer () (io.WriteCloser, error) {
-	w := o.b.p.client.Bucket(o.b.Name()).Object(o.Key()).NewWriter(o.b.p.context)
+	w := o.getGCloudObject().NewWriter(o.b.p.context)
 	o.writer.wc = w
 	return o.writer, nil
 }
@@ -84,11 +87,18 @@ func (w gCloudObjectWriter) Close () error {
 }
 
 func (o *gCloudObject) get () error {
-	objAttrs, err := o.b.p.client.Bucket(o.b.Name()).Object(o.Key()).Attrs(o.b.p.context)
+	objAttrs, err := o.getGCloudObject().Attrs(o.b.p.context)
 	if err != nil {
 		return err
 	}
 	o.size = int(objAttrs.Size)
 	o.lastModified = objAttrs.Updated
 	return nil
+}
+
+func (o *gCloudObject) getGCloudObject () *gs.ObjectHandle {
+	if o.gco == nil {
+		o.gco = o.b.getGCloudBucket().Object(o.Key())
+	}
+	return o.gco
 }
