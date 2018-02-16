@@ -44,21 +44,15 @@ type Provider interface {
 	StorageProvider
 }
 
-// type StorageProviderParams struct {
-// 	Name string
-// 	AwsId, AwsSecret, AwsRegion string
-// 	GCloudProjectID string
-// }
-
-// func NewStorageProvider (params StorageProviderParams) (StorageProvider, error) {
-// 	switch params.Name {
-// 	case "AWS":
-// 		return newAwsProvider(params.AwsId, params.AwsSecret, params.AwsRegion), nil
-// 	case "GCLOUD":
-// 		return NewGCloudProvider(params.GCloudProjectID), nil
-// 	}
-// 	return nil, fmt.Errorf("%s is not a valid provider name", params.Name)
-// }
+func NewStorageProvider (params ProviderParams) (StorageProvider, error) {
+	switch params.Name {
+		// StorageProvider's go here...
+	}
+	if p, err := NewProvider(params); err == nil {
+		return p, nil
+	}
+	return nil, fmt.Errorf("%s is not a valid provider name", params.Name)
+}
 
 type StorageProvider interface {
 	Buckets () ([]Bucket, error)
