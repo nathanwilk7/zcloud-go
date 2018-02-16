@@ -2,6 +2,7 @@ package zcloud
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
 	"testing"
 	// "time"
@@ -149,13 +150,12 @@ func testObject (t *testing.T, o Object, o2 Object) {
 	if s != len(testObjectDataConst) {
 		t.Fatalf("Size is %v but should be %v", s, len(testObjectDataConst))
 	}
-	b := make([]byte, len(testObjectDataConst))
 	r, err := o2.Reader()
 	if err != nil {
 		t.Fatalf("Reader %v", err)
 	}
-	n, err = r.Read(b)
-	if n != len(testObjectDataConst) {
+	b, err := ioutil.ReadAll(r)
+	if len(b) != len(testObjectDataConst) {
 		t.Fatalf("Only read %v of %v bytes", n, len(testObjectDataConst))
 	}
 	if err != nil && err != io.EOF {
