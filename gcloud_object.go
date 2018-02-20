@@ -33,20 +33,6 @@ func (o gCloudObject) Key () string {
 	return o.key
 }
 
-func (o gCloudObject) LastModified () (time.Time, error) {
-	if err := o.get(); err != nil {
-		return time.Time{}, err
-	}
-	return o.lastModified, nil
-}
-
-func (o gCloudObject) Size () (int, error) {
-	if err := o.get(); err != nil {
-		return 0, err
-	}
-	return o.size, nil
-}
-
 type gCloudObjectReader struct {
 	rc io.ReadCloser
 }
@@ -86,19 +72,33 @@ func (w gCloudObjectWriter) Close () error {
 	return w.wc.Close()
 }
 
-func (o *gCloudObject) get () error {
-	objAttrs, err := o.getGCloudObject().Attrs(o.b.p.context)
-	if err != nil {
-		return err
-	}
-	o.size = int(objAttrs.Size)
-	o.lastModified = objAttrs.Updated
-	return nil
-}
-
 func (o *gCloudObject) getGCloudObject () *gs.ObjectHandle {
 	if o.gco == nil {
 		o.gco = o.b.getGCloudBucket().Object(o.Key())
 	}
 	return o.gco
+}
+
+func (o gCloudObject) Info () (ObjectInfo, error) {
+	gcoi := gCloudObjectInfo{}
+	objAttrs, err := o.getGCloudObject().Attrs(o.b.p.context)
+	if err != nil {
+		return gcoi, err
+	}
+	gcoi.size = int(objAttrs.Size)
+	gcoi.lastModified = objAttrs.Updated
+	return gcoi, nil
+}
+
+type gCloudObjectInfo struct {
+	lastModified time.Time
+	size int
+}
+
+func (i gCloudObjectInfo) LastModified () time.Time {
+	return i.lastModified
+}
+
+func (i gCloudObjectInfo) Size () int {
+	return i.size
 }

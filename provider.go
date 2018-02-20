@@ -74,9 +74,13 @@ type ObjectsQueryParams struct {
 
 type Object interface {
 	Delete () error
+	Info () (ObjectInfo, error)
 	Key () string
-	LastModified () (time.Time, error)
 	Reader () (io.ReadCloser, error)
 	Writer () (io.WriteCloser, error)
-	Size () (int, error)
+}
+
+type ObjectInfo interface {
+	LastModified () time.Time
+	Size () int
 }

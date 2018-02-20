@@ -15,8 +15,6 @@ func NewTestObject (bucket, key string, b *TestBucket) TestObject {
 
 type TestObject struct {
 	BucketField, KeyField string
-	LastModifiedField time.Time
-	SizeField int
 	ReaderField TestObjectReader
 	WriterField *TestObjectWriter
 	B *TestBucket
@@ -28,14 +26,6 @@ func (o TestObject) Delete () error {
 
 func (o TestObject) Key () string {
 	return o.KeyField
-}
-
-func (o TestObject) LastModified () (time.Time, error) {
-	return time.Time{}, nil
-}
-
-func (o TestObject) Size () (int, error) {
-	return o.SizeField, nil
 }
 
 type TestObjectReader struct {}
@@ -67,4 +57,21 @@ func (w *TestObjectWriter) Write (b []byte) (int, error) {
 
 func (w *TestObjectWriter) Close () error {
 	return nil
+}
+
+func (o TestObject) Info () (ObjectInfo, error) {
+	return TestObjectInfo{}, nil
+}
+
+type TestObjectInfo struct {
+	LastModifiedField time.Time
+	SizeField int
+}
+
+func (i TestObjectInfo) LastModified () time.Time {
+	return i.LastModifiedField
+}
+
+func (i TestObjectInfo) Size () int {
+	return i.SizeField
 }
