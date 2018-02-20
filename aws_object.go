@@ -22,7 +22,6 @@ type awsObject struct {
 	bucket, key string
 	lastModified time.Time
 	size int
-	reader awsObjectReader
 	writer *awsObjectWriter
 	b *awsBucket
 }
@@ -41,20 +40,6 @@ func (o awsObject) Key () string {
 	return o.key
 }
 
-func (o awsObject) LastModified () (time.Time, error) {
-	if err := o.get(); err != nil {
-		return time.Time{}, err
-	}
-	return o.lastModified, nil
-}
-
-func (o awsObject) Size () (int, error) {
-	if err := o.get(); err != nil {
-		return 0, err
-	}
-	return o.size, nil
-}
-
 func newAwsObjectReader () awsObjectReader {
 	return awsObjectReader{}
 }
@@ -64,10 +49,16 @@ type awsObjectReader struct {
 }
 
 func (o awsObject) Reader () (io.ReadCloser, error) {
-	if err := o.get(); err != nil {
+	s3svc := s3.New(o.b.p.session)
+	input := &s3.GetObjectInput{
+		Bucket: aws.String(o.bucket),
+		Key: aws.String(o.Key()),
+	}
+	object, err := s3svc.GetObject(input)
+	if err != nil {
 		return nil, err
 	}
-	return o.reader, nil
+	return object.Body, nil
 }
 
 func (w awsObjectReader) Read (b []byte) (int, error) {
@@ -111,7 +102,8 @@ func (w *awsObjectWriter) Close () error {
 	return nil
 }
 
-func (o *awsObject) get () error {
+func (o awsObject) Info () (ObjectInfo, error) {
+	aoi := awsObjectInfo{}
 	s3svc := s3.New(o.b.p.session)
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(o.bucket),
@@ -119,10 +111,22 @@ func (o *awsObject) get () error {
 	}
 	object, err := s3svc.GetObject(input)
 	if err != nil {
-		return err
+		return aoi, err
 	}
-	o.lastModified = *object.LastModified
-	o.size = int(aws.Int64Value(object.ContentLength))
-	o.reader.rc = object.Body
-	return nil
+	aoi.lastModified = *object.LastModified
+	aoi.size = int(aws.Int64Value(object.ContentLength))
+	return aoi, nil
+}
+
+func (i awsObjectInfo) LastModified () time.Time {
+	return i.lastModified
+}
+
+func (i awsObjectInfo) Size () int {
+	return i.size
+}
+
+type awsObjectInfo struct {
+	lastModified time.Time
+	size int
 }
