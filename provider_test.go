@@ -143,11 +143,11 @@ func testObject (t *testing.T, o Object, o2 Object) {
 	// if !l.After(prevTime) || !l.Before(postTime) {
 	// 	t.Fatalf("Last Modified %v, Previous %v, Post %v", l, prevTime, postTime)
 	// }
-	s, err := o.Size()
+	oi, err := o.Info()
 	if err != nil {
 		t.Fatalf("Size %v", err)
 	}
-	if s != len(testObjectDataConst) {
+	if oi.Size() != len(testObjectDataConst) {
 		t.Fatalf("Size is %v but should be %v", s, len(testObjectDataConst))
 	}
 	r, err := o2.Reader()
