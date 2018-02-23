@@ -20,6 +20,10 @@ type TestObject struct {
 	B *TestBucket
 }
 
+func (src TestObject) CopyTo (dest Object) error {
+	return nil
+}
+
 func (o TestObject) Delete () error {
 	return nil
 }

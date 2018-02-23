@@ -1,6 +1,7 @@
 package zcloud
 
 import (
+	"fmt"
 	"io"
 	"time"
 
@@ -24,6 +25,17 @@ type gCloudObject struct {
 	writer gCloudObjectWriter
 	gco *gs.ObjectHandle
 }
+
+func (src gCloudObject) CopyTo (dest Object) error {
+	// Added this type check to make it easy to do fast copying
+	d, ok := dest.(gCloudObject)
+	if !ok {
+		return fmt.Errorf("gcloud CopyTo currently only works for objects of the same provider. src: %v, dest: %v", src, dest)
+	}
+	_, err := d.gco.CopierFrom(src.gco).Run(src.b.p.context)
+	return err
+}
+
 func (o gCloudObject) Delete () error {
 	err := o.getGCloudObject().Delete(o.b.p.context)
 	return err
