@@ -3,6 +3,7 @@ package zcloud
 import (
 	"fmt"
 	"io"
+	"runtime"
 	"time"
 
 	gs "cloud.google.com/go/storage"
@@ -37,6 +38,7 @@ func (src gCloudObject) CopyTo (dest Object) error {
 }
 
 func (o gCloudObject) Delete () error {
+	runtime.Breakpoint()
 	err := o.getGCloudObject().Delete(o.b.p.context)
 	return err
 }
