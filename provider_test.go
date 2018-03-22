@@ -72,7 +72,6 @@ func TestGCloud (t *testing.T) {
 const testBucketName = "zcloud-testing-go"
 
 func testProvider (t *testing.T, p Provider) {
-	runtime.Breakpoint()
 	b := p.Bucket(testBucketName)
 	err := b.Create()
 	if err != nil {
@@ -152,7 +151,6 @@ const testObjectKey = "test.txt"
 var testObjectDataConst = []byte{'n', 'a', 't', 'e', 'e'}
 
 func testBucket (t *testing.T, b Bucket) {
-	runtime.Breakpoint()
 	o := b.Object(testObjectKey)
 	w, err := o.Writer()
 	if err != nil {
@@ -199,7 +197,6 @@ func testBucket (t *testing.T, b Bucket) {
 }
 
 func testObject (t *testing.T, o Object, o2 Object) {
-	runtime.Breakpoint()
 	// prevTime := time.Now()
 	w, err := o.Writer()
 	if err != nil {

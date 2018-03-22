@@ -3,7 +3,6 @@ package zcloud
 import (
 	"fmt"
 	"io"
-	"runtime"
 	"time"
 
 	gs "cloud.google.com/go/storage"
@@ -28,17 +27,18 @@ type gCloudObject struct {
 }
 
 func (src gCloudObject) CopyTo (dest Object) error {
+	src.gco = src.getGCloudObject()
 	// Added this type check to make it easy to do fast copying
 	d, ok := dest.(gCloudObject)
 	if !ok {
 		return fmt.Errorf("gcloud CopyTo currently only works for objects of the same provider. src: %v, dest: %v", src, dest)
 	}
+	d.gco = d.getGCloudObject()
 	_, err := d.gco.CopierFrom(src.gco).Run(src.b.p.context)
 	return err
 }
 
 func (o gCloudObject) Delete () error {
-	runtime.Breakpoint()
 	err := o.getGCloudObject().Delete(o.b.p.context)
 	return err
 }
