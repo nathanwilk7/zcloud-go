@@ -33,7 +33,6 @@ func (src awsObject) CopyTo (dest Object) error {
 	if !ok {
 		return fmt.Errorf("AWS CopyTo currently only works for objects of the same provider. src: %v, dest: %v", src, dest)
 	}
-	fmt.Println("AWS CopySource: %s", fmt.Sprintf("%s/%s", src.b.Name(), src.Key()))
 	coi := &s3.CopyObjectInput{
 		Bucket: aws.String(d.b.Name()),
 		CopySource: aws.String(fmt.Sprintf("%s/%s", src.b.Name(), src.Key())),
