@@ -32,43 +32,6 @@ func TestGCloud (t *testing.T) {
 	})
 }
 
-// func TestGCloudDelete (t *testing.T) {
-// 	params := GCloudProviderParams("GCLOUD", os.Getenv("ZCLOUD_GCLOUD_PROJECT"))
-// 	p, err := NewProvider(params)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	b := p.Bucket(testBucketName)
-// 	err = b.Create()
-// 	if err != nil {
-// 		t.Fatalf("GCloudDelete Bucket create %v", err)
-// 	}
-// 	o := b.Object(testObjectKey)
-// 	w, err := o.Writer()
-// 	if err != nil {
-// 		t.Fatalf("Writer %v", err)
-// 	}
-// 	n, err := w.Write(testObjectDataConst)
-// 	if n != len(testObjectDataConst) {
-// 		t.Fatalf("Only wrote %v of %v bytes: %v", n, len(testObjectDataConst), testObjectDataConst)
-// 	}
-// 	if err != nil {
-// 		t.Fatalf("Error when writing object %v", err)
-// 	}
-// 	err = w.Close()
-// 	if err != nil {
-// 		t.Fatalf("Error when closing object after writing %v", err)
-// 	}
-// 	err = o.Delete()
-// 	if err != nil {
-// 		t.Fatal("Object Delete %v", err)
-// 	}
-// 	err = b.Delete()
-// 	if err != nil {
-// 		t.Fatalf("Bucket delete %v", err)
-// 	}
-// }
-
 const testBucketName = "zcloud-testing-go"
 
 func testProvider (t *testing.T, p Provider) {
