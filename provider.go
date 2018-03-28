@@ -6,6 +6,42 @@ import (
 	"time"
 )
 
+type StorageProvider interface {
+	Buckets () ([]Bucket, error)
+	Bucket (name string) Bucket
+}
+
+type Bucket interface {
+	Create () error
+	Delete () error
+	Name () string
+	Object (key string) Object
+	Objects () ([]Object, error)
+	ObjectsQuery (query *ObjectsQueryParams) ([]Object, error)
+}
+
+type ObjectsQueryParams struct {
+	Prefix string
+}
+
+type Object interface {
+	CopyTo (Object) error
+	Delete () error
+	Info () (ObjectInfo, error)
+	Key () string
+	Reader () (io.ReadCloser, error)
+	Writer () (io.WriteCloser, error)
+}
+
+type ObjectInfo interface {
+	LastModified () time.Time
+	Size () int
+}
+
+type ObjectCopier interface {
+	Copy () error
+}
+
 func AwsProviderParams (name, keyID, secretKey, region string) ProviderParams {
 	return ProviderParams{
 		Name: name,
@@ -52,40 +88,4 @@ func NewStorageProvider (params ProviderParams) (StorageProvider, error) {
 		return p, nil
 	}
 	return nil, fmt.Errorf("%s is not a valid provider name", params.Name)
-}
-
-type StorageProvider interface {
-	Buckets () ([]Bucket, error)
-	Bucket (name string) Bucket
-}
-
-type Bucket interface {
-	Create () error
-	Delete () error
-	Name () string
-	Object (key string) Object
-	Objects () ([]Object, error)
-	ObjectsQuery (query *ObjectsQueryParams) ([]Object, error)
-}
-
-type ObjectsQueryParams struct {
-	Prefix string
-}
-
-type Object interface {
-	CopyTo (Object) error
-	Delete () error
-	Info () (ObjectInfo, error)
-	Key () string
-	Reader () (io.ReadCloser, error)
-	Writer () (io.WriteCloser, error)
-}
-
-type ObjectInfo interface {
-	LastModified () time.Time
-	Size () int
-}
-
-type ObjectCopier interface {
-	Copy () error
 }

@@ -1,9 +1,11 @@
 package zcloud
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"testing"
 	// "time"
 )
@@ -30,7 +32,7 @@ func TestGCloud (t *testing.T) {
 	})
 }
 
-const testBucketName = "zcloud-testing-go" 
+const testBucketName = "zcloud-testing-go"
 
 func testProvider (t *testing.T, p Provider) {
 	b := p.Bucket(testBucketName)
@@ -46,6 +48,7 @@ func testProvider (t *testing.T, p Provider) {
 	for _, b = range bs {
 		if b.Name() == testBucketName {
 			hasBucket = true
+			break
 		}
 	}
 	if !hasBucket {
@@ -54,9 +57,47 @@ func testProvider (t *testing.T, p Provider) {
 	t.Run("Bucket", func (t *testing.T) {
 		testBucket(t, b)
 	})
+	oSrc := b.Object(testObjectKey)
+	w, err := oSrc.Writer()
+	if err != nil {
+		t.Fatalf("oSrc Writer %v", err)
+	}
+	n, err := w.Write(testObjectDataConst)
+	if n != len(testObjectDataConst) {
+		t.Fatalf("oSrc Only wrote %v of %v bytes: %v", n, len(testObjectDataConst), testObjectDataConst)
+	}
+	if err != nil {
+		t.Fatalf("oSrc Error when writing object %v", err)
+	}
+	err = w.Close()
+	if err != nil {
+		t.Fatalf("oSrc Error when closing object after writing %v", err)
+	}
+	bDest := p.Bucket(fmt.Sprintf("%s-2", testBucketName))
+	err = bDest.Create()
+	if err != nil {
+		t.Fatalf("Create bDest %v", err)
+	}
+	oDest := bDest.Object(testObjectKey)
+	err = oSrc.CopyTo(oDest)
+	if err != nil {
+		t.Fatalf("CopyTo %v", err)
+	}
+	err = oSrc.Delete()
+	if err != nil {
+		t.Fatalf("oSrc Delete oSrc %v", err)
+	}
+	err = oDest.Delete()
+	if err != nil {
+		t.Fatalf("oDest Delete oDest %v", err)
+	}
 	err = b.Delete()
 	if err != nil {
 		t.Fatalf("Bucket delete %v", err)
+	}
+	err = bDest.Delete()
+	if err != nil {
+		t.Fatalf("bDest Bucket delete %v", err)
 	}
 	bs, err = p.Buckets()
 	if err != nil {
@@ -147,7 +188,8 @@ func testObject (t *testing.T, o Object, o2 Object) {
 	if err != nil {
 		t.Fatalf("Size %v", err)
 	}
-	if oi.Size() != len(testObjectDataConst) {
+	s := oi.Size()
+	if s != len(testObjectDataConst) {
 		t.Fatalf("Size is %v but should be %v", s, len(testObjectDataConst))
 	}
 	r, err := o2.Reader()

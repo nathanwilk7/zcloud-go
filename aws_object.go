@@ -28,7 +28,7 @@ type awsObject struct {
 }
 
 func (src awsObject) CopyTo (dest Object) error {
-		// Added this type check to make it easy to do fast copying
+	// Added this type check to make it easy to do fast copying
 	d, ok := dest.(awsObject)
 	if !ok {
 		return fmt.Errorf("AWS CopyTo currently only works for objects of the same provider. src: %v, dest: %v", src, dest)
@@ -55,10 +55,6 @@ func (o awsObject) Delete () error {
 
 func (o awsObject) Key () string {
 	return o.key
-}
-
-func newAwsObjectReader () awsObjectReader {
-	return awsObjectReader{}
 }
 
 type awsObjectReader struct {
