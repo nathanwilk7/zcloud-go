@@ -2,6 +2,7 @@ package zcloud
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"time"
 
@@ -24,6 +25,22 @@ type awsObject struct {
 	size int
 	writer *awsObjectWriter
 	b *awsBucket
+}
+
+func (src awsObject) CopyTo (dest Object) error {
+		// Added this type check to make it easy to do fast copying
+	d, ok := dest.(awsObject)
+	if !ok {
+		return fmt.Errorf("AWS CopyTo currently only works for objects of the same provider. src: %v, dest: %v", src, dest)
+	}
+	coi := &s3.CopyObjectInput{
+		Bucket: aws.String(d.b.Name()),
+		CopySource: aws.String(fmt.Sprintf("%s/%s", src.b.Name(), src.Key())),
+		Key: aws.String(d.Key()),
+	}
+	s3svc := s3.New(src.b.p.session)
+	_, err := s3svc.CopyObject(coi)
+	return err
 }
 
 func (o awsObject) Delete () error {
@@ -129,4 +146,8 @@ func (i awsObjectInfo) Size () int {
 type awsObjectInfo struct {
 	lastModified time.Time
 	size int
+}
+
+type awsObjectCopier struct {
+	coi *s3.CopyObjectInput
 }

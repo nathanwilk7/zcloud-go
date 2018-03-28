@@ -73,6 +73,7 @@ type ObjectsQueryParams struct {
 }
 
 type Object interface {
+	CopyTo (Object) error
 	Delete () error
 	Info () (ObjectInfo, error)
 	Key () string
@@ -83,4 +84,8 @@ type Object interface {
 type ObjectInfo interface {
 	LastModified () time.Time
 	Size () int
+}
+
+type ObjectCopier interface {
+	Copy () error
 }
