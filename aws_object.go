@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
@@ -124,6 +125,16 @@ func (o awsObject) Info () (ObjectInfo, error) {
 	}
 	object, err := s3svc.GetObject(input)
 	if err != nil {
+		aerr, ok := err.(awserr.Error)
+		if ok {
+			switch aerr.Code() {
+			case s3.ErrCodeNoSuchKey:
+				err = ErrObjectDoesNotExist{
+					bucket: o.b.Name(),
+					key: o.Key(),
+				}
+			}
+		}
 		return aoi, err
 	}
 	aoi.lastModified = *object.LastModified
