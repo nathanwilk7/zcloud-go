@@ -124,7 +124,7 @@ func (i gCloudObjectInfo) Size () int {
 	return i.size
 }
 
-		type GCloudObjectDoesNotExist struct {
+type GCloudObjectDoesNotExist struct {
 	bucket string
 	key string
 }
