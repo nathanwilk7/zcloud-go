@@ -2,44 +2,11 @@ package zcloud
 
 import (
 	"fmt"
-	"io"
-	"time"
 )
 
 type StorageProvider interface {
 	Buckets () ([]Bucket, error)
 	Bucket (name string) Bucket
-}
-
-type Bucket interface {
-	Create () error
-	Delete () error
-	Name () string
-	Object (key string) Object
-	Objects () ([]Object, error)
-	ObjectsQuery (query *ObjectsQueryParams) ([]Object, error)
-}
-
-type ObjectsQueryParams struct {
-	Prefix string
-}
-
-type Object interface {
-	CopyTo (Object) error
-	Delete () error
-	Info () (ObjectInfo, error)
-	Key () string
-	Reader () (io.ReadCloser, error)
-	Writer () (io.WriteCloser, error)
-}
-
-type ObjectInfo interface {
-	LastModified () time.Time
-	Size () int
-}
-
-type ObjectCopier interface {
-	Copy () error
 }
 
 func AwsProviderParams (name, keyID, secretKey, region string) ProviderParams {

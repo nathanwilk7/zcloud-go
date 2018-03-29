@@ -97,6 +97,13 @@ func (o gCloudObject) Info () (ObjectInfo, error) {
 	gcoi := gCloudObjectInfo{}
 	objAttrs, err := o.getGCloudObject().Attrs(o.b.p.context)
 	if err != nil {
+		switch err {
+		case gs.ErrObjectNotExist:
+			err = ErrObjectDoesNotExist{
+				bucket: o.b.Name(),
+				key: o.Key(),
+			}
+		}
 		return gcoi, err
 	}
 	gcoi.size = int(objAttrs.Size)
@@ -115,4 +122,9 @@ func (i gCloudObjectInfo) LastModified () time.Time {
 
 func (i gCloudObjectInfo) Size () int {
 	return i.size
+}
+
+type GCloudObjectDoesNotExist struct {
+	bucket string
+	key string
 }
